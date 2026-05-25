@@ -93,7 +93,7 @@ async def on_message(message):
         else:
             await processing_msg.edit(content=f"{reason}\n\nMake sure your screenshot shows:\n• 'Subscribed' button on YouTube\n• Channel name: **{YOUR_CHANNEL}**")
     except Exception as e:
-        await processing_msg.edit(content="⚠️ Error! Please try again.")
+       await processing_msg.edit(content="⚠️ Error! Please try again.")
         print(f"Error: {e}")
 
 client.run(BOT_TOKEN)
