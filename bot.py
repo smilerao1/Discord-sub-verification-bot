@@ -2,7 +2,6 @@ import discord
 import os
 import base64
 import httpx
-import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -33,6 +32,7 @@ async def check_screenshot(image_bytes, media_type):
                     }
                 },
                 {
+                    "type": "text",
                     "text": f"""Look at this screenshot carefully.
 Does it clearly show that someone is SUBSCRIBED to a YouTube channel named '{YOUR_CHANNEL}'?
 Look for: Subscribe button showing 'Subscribed', channel name visible, YouTube interface.
@@ -93,7 +93,7 @@ async def on_message(message):
         else:
             await processing_msg.edit(content=f"{reason}\n\nMake sure your screenshot shows:\n• 'Subscribed' button on YouTube\n• Channel name: **{YOUR_CHANNEL}**")
     except Exception as e:
-       await processing_msg.edit(content="⚠️ Error! Please try again.")
+        await processing_msg.edit(content=f"⚠️ Error: {e}")
         print(f"Error: {e}")
 
 client.run(BOT_TOKEN)
