@@ -32,7 +32,6 @@ async def check_screenshot(image_bytes, media_type):
                     }
                 },
                 {
-                    "type": "text",
                     "text": f"""Look at this screenshot carefully.
 Does it clearly show that someone is SUBSCRIBED to a YouTube channel named '{YOUR_CHANNEL}'?
 Look for: Subscribe button showing 'Subscribed', channel name visible, YouTube interface.
@@ -48,6 +47,11 @@ REJECTED - [reason] if not valid proof"""
     async with httpx.AsyncClient() as http:
         response = await http.post(url, json=payload, timeout=30)
         data = response.json()
+        print(f"Gemini full response: {data}")
+
+    if "candidates" not in data:
+        error_msg = data.get("error", {}).get("message", str(data))
+        raise Exception(f"Gemini error: {error_msg}")
 
     result = data["candidates"][0]["content"]["parts"][0]["text"].strip()
 
