@@ -20,7 +20,7 @@ client = discord.Client(intents=intents)
 async def check_screenshot(image_bytes, media_type):
     img_b64 = base64.standard_b64encode(image_bytes).decode()
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}"
 
     payload = {
         "contents": [{
@@ -71,15 +71,15 @@ async def on_message(message):
     if message.channel.id != VERIFY_CHANNEL:
         return
     if not message.attachments:
-        await message.reply("📸 Please share a screenshot of your YouTube subscription!")
+        await message.channel.send("📸 Please share a screenshot of your YouTube subscription!")
         return
 
     attachment = message.attachments[0]
     if not attachment.content_type or "image" not in attachment.content_type:
-        await message.reply("⚠️ Please send a PNG or JPG image.")
+        await message.channel.send("⚠️ Please send a PNG or JPG image.")
         return
 
-    processing_msg = await message.reply("⏳ Checking your screenshot...")
+    processing_msg = await message.channel.send("⏳ Checking your screenshot...")
 
     try:
         image_bytes = await attachment.read()
