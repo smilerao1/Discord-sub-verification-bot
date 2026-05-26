@@ -6,11 +6,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BOT_TOKEN      = os.getenv("BOT_TOKEN")
-VERIFY_CHANNEL = int(os.getenv("VERIFY_CHANNEL_ID"))
-VERIFIED_ROLE  = int(os.getenv("VERIFIED_ROLE_ID"))
-YOUR_CHANNEL   = os.getenv("YOUR_YOUTUBE_CHANNEL")
-GEMINI_KEY     = os.getenv("GEMINI_API_KEY")
+BOT_TOKEN       = os.getenv("BOT_TOKEN")
+VERIFY_CHANNEL  = int(os.getenv("VERIFY_CHANNEL_ID"))
+VERIFIED_ROLE   = int(os.getenv("VERIFIED_ROLE_ID"))
+YOUR_CHANNEL    = os.getenv("YOUR_YOUTUBE_CHANNEL")
+OPENROUTER_KEY  = os.getenv("OPENROUTER_API_KEY")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -20,40 +20,48 @@ client = discord.Client(intents=intents)
 async def check_screenshot(image_bytes, media_type):
     img_b64 = base64.standard_b64encode(image_bytes).decode()
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}"
-
-    payload = {
-        "contents": [{
-            "parts": [
-                {
-                    "inline_data": {
-                        "mime_type": media_type,
-                        "data": img_b64
-                    }
-                },
-                {
-                    "text": f"""Look at this screenshot carefully.
+    async with httpx.AsyncClient() as http:
+        response = await http.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "meta-llama/llama-3.2-11b-vision-instruct:free",
+                "messages": [{
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:{media_type};base64,{img_b64}"
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": f"""Look at this screenshot carefully.
 Does it clearly show that someone is SUBSCRIBED to a YouTube channel named '{YOUR_CHANNEL}'?
 Look for: Subscribe button showing 'Subscribed', channel name visible, YouTube interface.
 
 Reply ONLY with:
 VERIFIED - if clearly subscribed to {YOUR_CHANNEL}
 REJECTED - [reason] if not valid proof"""
-                }
-            ]
-        }]
-    }
-
-    async with httpx.AsyncClient() as http:
-        response = await http.post(url, json=payload, timeout=30)
+                        }
+                    ]
+                }]
+            },
+            timeout=30
+        )
         data = response.json()
-        print(f"Gemini full response: {data}")
+        print(f"OpenRouter response: {data}")
 
-    if "candidates" not in data:
+    if "choices" not in data:
         error_msg = data.get("error", {}).get("message", str(data))
-        raise Exception(f"Gemini error: {error_msg}")
+        raise Exception(f"API error: {error_msg}")
 
-    result = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+    result = data["choices"][0]["message"]["content"].strip()
+    print(f"AI result: {result}")
 
     if result.startswith("VERIFIED"):
         return True, "✅ Subscription verified!"
