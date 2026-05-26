@@ -28,7 +28,7 @@ async def check_screenshot(image_bytes, media_type):
                 "Content-Type": "application/json"
             },
             json={
-                "model": "google/gemma-4-31b-it:free",
+                "model": "openrouter/free",
                 "messages": [{
                     "role": "user",
                     "content": [
