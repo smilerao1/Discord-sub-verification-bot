@@ -28,7 +28,7 @@ async def check_screenshot(image_bytes, media_type):
                 "Content-Type": "application/json"
             },
             json={
-                "model": "meta-llama/llama-3.2-11b-vision-instruct:free",
+                "model": "google/gemma-4-31b-it:free",
                 "messages": [{
                     "role": "user",
                     "content": [
